@@ -1,0 +1,4 @@
+The files in this folder (landmarks.py, resample.py, features.py) and models/gs/ (model.onnx, model-meta.json,
+labels.json, replay_clips.json) come from GestureSign by Shashank Yadav, MIT licence (LICENSE_GestureSign.txt):
+https://github.com/shashank11yadav/GestureSign
+The model was trained on "Google - Isolated Sign Language Recognition" (Kaggle, asl-signs), CC BY 4.0.

@@ -1,0 +1,16 @@
+Blue Voice
+Copyright (c) 2026 Haseeb Iqbal. All rights reserved.
+
+Blue Voice is free to download and use for your own personal, non-commercial use.
+
+Without written permission from the copyright holder you may NOT:
+  - copy, fork, republish or redistribute Blue Voice or any part of it,
+  - modify it or build another product from it,
+  - sell it, rent it, or offer it as a service.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+Third-party components (for example the GestureSign model, Google's sign dataset, MediaPipe and the embedded fonts) are NOT covered by
+this notice. They keep their own licences, listed in CREDITS.md, and those licences must be respected.

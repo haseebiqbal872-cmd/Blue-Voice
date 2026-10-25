@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign words</title>
+<style>
+:root{--bg:#0d1117;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--text:#e8edf5;--mute:#9aa7b8;--acc:#6ea8fe;--ok:#4cd39b;--warn:#f2b84b;--bad:#ff7b7b}
+@media (prefers-color-scheme:light){:root{--bg:#eef2f8;--card:rgba(255,255,255,.8);--line:rgba(0,0,0,.12);--text:#151b26;--mute:#5a667a;--acc:#2563eb;--ok:#0f9b6a;--warn:#a86d00;--bad:#c93a3a}}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,rgba(110,168,254,.18),transparent),var(--bg);color:var(--text);font:16px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:1.4rem;margin:0;flex:1}
+.chip{padding:4px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--mute)}
+.chip.on{color:var(--ok);border-color:var(--ok)}.chip.load{color:var(--warn);border-color:var(--warn)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
+.card h2{font-size:1rem;margin:0 0 10px;color:var(--mute);font-weight:600;letter-spacing:.02em}
+button{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--acc)}button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.pri{background:var(--acc);color:#fff;border-color:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#view{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;display:grid;place-items:center}
+#view img{width:100%;height:100%;object-fit:cover;display:none}
+#view .ph{color:#8b97a8;padding:16px;text-align:center}
+#dot{position:absolute;top:10px;left:10px;width:12px;height:12px;border-radius:50%;background:#555}
+#dot.on{background:var(--ok);box-shadow:0 0 12px var(--ok)}
+#big{font-size:2.4rem;font-weight:700;min-height:3rem;margin:4px 0}
+#big.ns{color:var(--warn);font-size:1.4rem}
+#sub{color:var(--mute);min-height:1.4rem;font-size:.9rem}
+.cands{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.cands button{font-size:1rem}
+.yours{color:var(--ok)}
+textarea{width:100%;min-height:90px;resize:vertical;background:transparent;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+input[type=text]{flex:1;min-width:140px;background:transparent;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit}
+label.chk{display:flex;gap:6px;align-items:center;color:var(--mute);font-size:.9rem}
+#teachmsg{margin:10px 0 4px;min-height:1.4rem;color:var(--acc)}
+.dots{display:flex;gap:8px;margin:6px 0}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}.dots i.f{background:var(--ok);border-color:var(--ok)}
+ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+li{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+li span{flex:1}li small{color:var(--mute)}
+#err{color:var(--bad);margin-top:10px;min-height:1.2rem;font-size:.9rem}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Sign words</h1>
+  <span id="chip" class="chip">Not started</span>
+</header>
+
+<div class="grid">
+  <section class="card" aria-label="Camera">
+    <h2>Camera</h2>
+    <div id="view"><img id="img" alt="Camera preview"><div class="ph" id="ph">Click <b>Start camera</b>. Sit so your head, shoulders and both hands are in the picture, with good light.</div><span id="dot" title="Hands moving"></span></div>
+    <div class="row" style="margin-top:12px">
+      <button class="pri" id="start">Start camera</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
+    <p class="note">Sign one word, then rest your hands for a moment. Each word is read when your hands stop.</p>
+  </section>
+
+  <section class="card" aria-label="What was signed">
+    <h2>What I see</h2>
+    <div id="big" aria-live="polite">&nbsp;</div>
+    <div id="sub"></div>
+    <div class="cands" id="cands"></div>
+    <textarea id="text" aria-label="Sentence" placeholder="Your words appear here"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="speak">Speak</button><button id="back">Undo word</button><button id="clear">Clear</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label class="chk"><input type="checkbox" id="auto" checked> Add sure words automatically</label>
+      <label class="chk"><input type="checkbox" id="say"> Say each word out loud</label>
+    </div>
+  </section>
+</div>
+
+<section class="card" style="margin-top:16px" aria-label="Your own words">
+  <h2>Your own words</h2>
+  <div class="row">
+    <input type="text" id="wname" maxlength="40" placeholder="Type the word you will sign, e.g. Dad's name" aria-label="Word to record">
+    <button class="pri" id="rec" disabled>Record</button>
+    <button id="cancel" hidden>Cancel</button>
+  </div>
+  <div class="dots" id="dots" hidden><i></i><i></i><i></i></div>
+  <div id="teachmsg" aria-live="polite">Start the camera, type a word, click Record, then sign it 3 times.</div>
+  <ul id="mywords"></ul>
+  <p class="note">Your words are saved only on this computer. Recording a word again replaces its old recordings.</p>
+</section>
+<div id="err" role="alert"></div>
+<p class="note">Built-in vocabulary: 250 ASL words (GestureSign model, MIT; trained on Google "Isolated Sign Language Recognition", CC BY 4.0). It can be wrong, so always check the word.</p>
+</main>
+<script>
+(function(){
+var ws,state='idle',words=[],seq=[];
+var $=function(i){return document.getElementById(i)};
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+function connect(){
+  ws=new WebSocket('ws://'+location.host+'/ws');
+  ws.onopen=function(){send({cmd:'list'})};
+  ws.onclose=function(){$('chip').textContent='Reconnecting...';$('chip').className='chip';setTimeout(connect,1500)};
+  ws.onmessage=function(e){var m=JSON.parse(e.data);handlers[m.type]&&handlers[m.type](m)};
+}
+function setState(s,note){
+  state=s;var c=$('chip');
+  c.textContent=s==='tracking'?'Watching':s==='loading'?'Loading...':'Not started';
+  c.className='chip '+(s==='tracking'?'on':s==='loading'?'load':'');
+  $('start').disabled=s!=='idle';$('stop').disabled=s==='idle';
+  $('rec').disabled=s!=='tracking';
+  if(s==='idle'){$('img').style.display='none';$('ph').style.display='block';$('dot').className=''}
+  if(note)$('err').textContent='';
+  $('ph').textContent=s==='loading'?(note||'Loading the body tracker...'):'Click Start camera. Sit so your head, shoulders and both hands are in the picture, with good light.';
+}
+function speak(t){try{if(!t)return;var u=new SpeechSynthesisUtterance(t);speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function addWord(w){seq.push(w);$('text').value=seq.join(' ');if($('say').checked)speak(w)}
+var handlers={
+  status:function(m){setState(m.state,m.note)},
+  frame:function(m){var i=$('img');i.src='data:image/jpeg;base64,'+m.jpg;i.style.display='block';$('ph').style.display='none'},
+  moving:function(m){$('dot').className=m.on?'on':''},
+  sign:function(m){
+    var big=$('big'),sub=$('sub'),cands=$('cands');cands.innerHTML='';
+    if(!m.top.length){big.textContent='';return}
+    var best=m.top[0];
+    if(m.kind==='sign'){big.className='';big.textContent=best[0];
+      sub.innerHTML=m.source==='yours'?'<span class="yours">One of your words</span> ('+Math.round(best[1]*100)+'% match)':Math.round(best[1]*100)+'% sure';
+      if($('auto').checked)addWord(best[0]);
+    }else{big.className='ns';big.textContent='Not sure';sub.textContent='Pick the right word, or sign it again a little slower.'}
+    if(m.source!=='yours'||m.kind!=='sign'){m.top.forEach(function(t){var b=document.createElement('button');b.textContent=t[0]+' '+Math.round(t[1]*100)+'%';
+      b.onclick=function(){addWord(t[0])};cands.appendChild(b)})}
+  },
+  teach:function(m){
+    $('teachmsg').textContent=m.message||'';
+    var d=$('dots'),show=(m.state==='waiting'||m.state==='saved'||m.state==='signing');
+    d.hidden=!(show||m.state==='done');
+    [].forEach.call(d.children,function(x,i){x.className=i<(m.take||0)?'f':''});
+    $('cancel').hidden=!show;$('rec').hidden=show;
+    if(m.state==='done'||m.state==='cancelled'){$('rec').hidden=false;$('cancel').hidden=true;$('wname').value=''}
+  },
+  words:function(m){
+    words=m.words;var ul=$('mywords');ul.innerHTML='';
+    words.forEach(function(w){var li=document.createElement('li');
+      li.innerHTML='<span></span><small></small>';li.firstChild.textContent=w.word;li.children[1].textContent=w.ready?w.takes+' recordings':'needs 3 recordings';
+      var b=document.createElement('button');b.textContent='Delete';b.onclick=function(){if(confirm('Delete "'+w.word+'"?'))send({cmd:'delete',word:w.word})};li.appendChild(b);ul.appendChild(li)});
+  },
+  error:function(m){$('err').textContent=m.message}
+};
+$('start').onclick=function(){$('err').textContent='';send({cmd:'start',source:'camera'})};
+$('stop').onclick=function(){send({cmd:'stop'})};
+$('rec').onclick=function(){var w=$('wname').value.trim();if(!w){$('teachmsg').textContent='Type the word first.';$('wname').focus();return}$('err').textContent='';send({cmd:'record',word:w})};
+$('wname').onkeydown=function(e){if(e.key==='Enter'&&!$('rec').disabled)$('rec').click()};
+$('cancel').onclick=function(){send({cmd:'cancel'})};
+$('speak').onclick=function(){speak($('text').value)};
+$('back').onclick=function(){seq.pop();$('text').value=seq.join(' ')};
+$('clear').onclick=function(){seq=[];$('text').value='';$('big').textContent='';$('sub').textContent='';$('cands').innerHTML=''};
+$('text').oninput=function(){seq=$('text').value.split(/\s+/).filter(Boolean)};
+connect();
+})();
+</script>
+</body>
+</html>

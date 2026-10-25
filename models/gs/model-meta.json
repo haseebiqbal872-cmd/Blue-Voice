@@ -1,0 +1,49 @@
+{
+ "version": "default-2fc9038cc4",
+ "featureVersion": 2,
+ "featureSet": "hands_pose_lips",
+ "fps": 30.0,
+ "minFrames": 8,
+ "maxFrames": 64,
+ "featureDim": 460,
+ "classes": 250,
+ "embeddingDim": 128,
+ "io": {
+  "input": "frames",
+  "outputs": [
+   "logits",
+   "embedding"
+  ],
+  "opset": 17
+ },
+ "trainedOn": {
+  "dataset": "asl-signs",
+  "clips": {
+   "train": 70272,
+   "val": 9809,
+   "test": 14396
+  },
+  "heldOutParticipants": [
+   16069,
+   37055,
+   61333
+  ]
+ },
+ "metrics": {
+  "top1": 0.7208946929702695,
+  "top5": 0.8808002222839678,
+  "testClips": 14396,
+  "shippedSigns": 250,
+  "shippedTop1": 0.7208946929702695,
+  "shippedTop3": 0.8525979438732981,
+  "teachAccuracy": 0.886725
+ },
+ "calibration": {
+  "temperature": 0.8826538438450513,
+  "notSureBelow": 0.2902794036564495
+ },
+ "teach": {
+  "minSimilarity": 0.0820143710821867,
+  "margin": 0.1
+ }
+}

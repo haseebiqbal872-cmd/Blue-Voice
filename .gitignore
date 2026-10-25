@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# personal data: API keys, your recorded signs, logs
+data/
+logs/
+cache/
+videos/
+*.pt
+*.joblib
+assets/models/*.task
+kaggle.json
+.env

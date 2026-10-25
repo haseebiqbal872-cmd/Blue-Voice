@@ -1,0 +1,8 @@
+# Only needed to retrain models with the scripts in tools/
+-r requirements.txt
+scikit-learn
+joblib
+torch
+pyarrow
+wordfreq
+kaggle
