@@ -14,7 +14,7 @@ PRESETS = {
     "custom": {"label": "Other (OpenAI-compatible)", "kind": "openai", "base_url": "", "model": ""},
 }
 
-DEFAULT = {"provider": "anthropic", "model": "", "base_url": "", "api_key": "", "workspace": "", "auto_approve": False, "web": True, "commands": False}
+DEFAULT = {"provider": "anthropic", "model": "", "base_url": "", "api_key": "", "workspace": "", "auto_approve": False, "web": True, "commands": False, "search_provider": "duckduckgo", "search_key": ""}
 
 
 class LLMConfig:
@@ -40,6 +40,12 @@ class LLMConfig:
             self.data["api_key"] = str(new["api_key"]).strip()
         if new.get("clear_key"):
             self.data["api_key"] = ""
+        if new.get("search_provider") in ("duckduckgo", "brave", "tavily"):
+            self.data["search_provider"] = new["search_provider"]
+        if new.get("search_key"):
+            self.data["search_key"] = str(new["search_key"]).strip()
+        if new.get("clear_search_key"):
+            self.data["search_key"] = ""
         for k in ("auto_approve", "web", "commands"):
             if k in new:
                 self.data[k] = bool(new[k])
@@ -61,6 +67,7 @@ class LLMConfig:
     def public(self) -> dict:
         d = self.data; r = self.resolved()
         return {"provider": d["provider"], "model": d["model"], "base_url": d["base_url"], "workspace": d["workspace"],
-                "auto_approve": d["auto_approve"], "web": d["web"], "commands": d["commands"], "has_key": bool(d["api_key"]), "key_hint": ("…" + d["api_key"][-4:]) if len(d["api_key"]) > 8 else "",
+                "auto_approve": d["auto_approve"], "web": d["web"], "commands": d["commands"], "search_provider": d["search_provider"], "has_search_key": bool(d["search_key"]),
+                "search_hint": ("…" + d["search_key"][-4:]) if len(d["search_key"]) > 8 else "", "has_key": bool(d["api_key"]), "key_hint": ("…" + d["api_key"][-4:]) if len(d["api_key"]) > 8 else "",
                 "ready": self.ready() is None, "problem": self.ready() or "", "default_model": PRESETS.get(d["provider"], PRESETS["custom"])["model"],
                 "presets": {k: {"label": v["label"], "model": v["model"], "base_url": v["base_url"], "no_key": bool(v.get("no_key"))} for k, v in PRESETS.items()}}

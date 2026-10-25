@@ -3,12 +3,14 @@ refuses addresses on this computer or home network."""
 from __future__ import annotations
 
 import html
+import json
 import ipaddress
 import os
 import re
 import socket
 import subprocess
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -38,9 +40,11 @@ SPECS = {
 
 
 class Tools:
-    def __init__(self, workspace: str, web: bool = True, commands: bool = False):
+    def __init__(self, workspace: str, web: bool = True, commands: bool = False, search_provider: str = "", search_key: str = "", fetch=None):
         self.root = os.path.realpath(workspace) if workspace else ""
         self.web, self.commands = web, commands
+        self.search_provider, self.search_key = (search_provider or "").lower(), search_key or ""
+        self._fetch = fetch or self._api
 
     def specs(self) -> list[dict]:
         out = []
@@ -186,7 +190,41 @@ class Tools:
         t = self._text(self._get(url))
         return t[:MAX_WEB] + (" [page continues]" if len(t) > MAX_WEB else "")
 
+    @staticmethod
+    def _api(url: str, headers: dict, body: dict | None = None):
+        req = urllib.request.Request(url, headers={"User-Agent": "BlueVoice/1.0", "Accept": "application/json", **headers},
+                                     data=json.dumps(body).encode() if body is not None else None, method="POST" if body is not None else "GET")
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            raise ToolError({401: "The search key was not accepted.", 403: "The search key was not accepted.", 429: "The search service says there were too many searches or the free quota is used up."}.get(e.code, f"The search service answered with an error ({e.code})."))
+        except Exception as e:
+            raise ToolError(f"Could not reach the search service: {e}")
+
+    def _keyed_search(self, query: str) -> str:
+        if self.search_provider == "brave":
+            j = self._fetch("https://api.search.brave.com/res/v1/web/search?count=6&q=" + urllib.parse.quote(query), {"X-Subscription-Token": self.search_key})
+            rows = [(r.get("title", ""), r.get("url", ""), r.get("description", "")) for r in (j.get("web") or {}).get("results", [])]
+            head = ""
+        else:
+            j = self._fetch("https://api.tavily.com/search", {"Authorization": "Bearer " + self.search_key, "Content-Type": "application/json"},
+                            {"query": query, "max_results": 6, "include_answer": True})
+            rows = [(r.get("title", ""), r.get("url", ""), r.get("content", "")) for r in j.get("results", [])]
+            head = f"Summary: {j['answer']}\n" if j.get("answer") else ""
+        lines = [f"{i}. {self._text(t)}\n   {u}\n   {self._text(d)[:400]}" for i, (t, u, d) in enumerate(rows[:6], 1)]
+        return head + "\n".join(lines) if lines else "No results found."
+
     def t_web_search(self, query):
+        if self.search_key and self.search_provider in ("brave", "tavily"):
+            try:
+                return self._keyed_search(query)
+            except ToolError as e:
+                note = f"(Your {self.search_provider.title()} search failed: {e} Using the free search instead.)\n"
+                return note + self._ddg(query)
+        return self._ddg(query)
+
+    def _ddg(self, query):
         page = self._get("https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query))
         out = []
         for m in re.finditer(r'(?s)<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)</a>.*?(?:class="result__snippet"[^>]*>(.*?)</a>)?', page):

@@ -2472,6 +2472,8 @@ pg.innerHTML='<h3 class="pgh">AI models</h3><p class="note">Connect your own AI 
  '<div class="aip"><label for="ai-prov">Model provider</label><select class="cus" id="ai-prov"></select>'+field('ai-model','Model name','text','')+field('ai-key','API key','password','')+
  '<small class="note" id="ai-keyn" style="margin:0 4px"></small>'+field('ai-url','Address (only for Ollama, OpenRouter and other custom models)','text','')+field('ai-ws','Workspace folder the assistant may read and change','text','For example D:\\\\GestureCopilot\\\\workspace')+
  '<label class="rd"><input type="checkbox" id="ai-web" checked><span>Let the assistant search the web<small>It can read public web pages. It cannot open addresses on your own computer or network.</small></span></label>'+
+ '<label for="ai-sp">Web search service</label><select class="cus" id="ai-sp"><option value="duckduckgo">Free search (no key, can be blocked)</option><option value="brave">Brave Search (needs a key)</option><option value="tavily">Tavily (needs a key)</option></select>'+
+ field('ai-sk','Search key','password','')+'<small class="note" id="ai-skn" style="margin:0 4px"></small>'+
  '<label class="rd"><input type="checkbox" id="ai-ask" checked><span>Ask me before it creates, changes or deletes a file<small>Recommended. Reading files and searching never asks.</small></span></label>'+
  '<label class="rd"><input type="checkbox" id="ai-cmd"><span>Let the assistant run commands in the workspace folder<small>Off by default. It still asks every single time, even if you turned off asking for files. Only turn this on if you trust the model you chose.</small></span></label>'+
  '<label>When I show my palm, send my signed message to</label>'+
@@ -2479,17 +2481,19 @@ pg.innerHTML='<h3 class="pgh">AI models</h3><p class="note">Connect your own AI 
  '<label class="rd"><input type="radio" name="ai-tg" value="overlay"><span>The app I was using before<small>For ChatGPT, Claude, Gemini or any message box. It types the message in and you press that app’s Send button. Start the PC app with overlay.bat for this.</small></span></label>'+
  '<div class="row"><button class="go" id="ai-save" type="button">Save</button><span class="stat" id="ai-stat"></span></div>'+
  '<h3 class="pgh" style="margin-top:22px">Saved chats</h3><div class="row"><button class="go" id="ai-new" type="button">New chat</button></div><div class="chl" id="ai-chats"></div></div>';
+function searchUi(){var p=$('ai-sp').value,k=p!=='duckduckgo';$('ai-sk').disabled=!k;$('ai-sk').placeholder=!k?'Not needed for the free search':(cfg&&cfg.has_search_key&&cfg.search_provider===p?'Saved '+cfg.search_hint+'. Leave empty to keep it.':'Paste your '+(p==='brave'?'Brave':'Tavily')+' key');$('ai-skn').textContent=k?'Get a key at '+(p==='brave'?'brave.com/search/api':'tavily.com')+'. It is stored on this computer only.':''}
 function fill(){if(!cfg)return;var sel=$('ai-prov');if(!sel.options.length){Object.keys(cfg.presets).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=cfg.presets[k].label;sel.appendChild(o)})}
  sel.value=cfg.provider;$('ai-model').value=cfg.model;$('ai-model').placeholder=(cfg.presets[cfg.provider]||{}).model||'';$('ai-url').value=cfg.base_url;$('ai-url').placeholder=(cfg.presets[cfg.provider]||{}).base_url||'https://…/v1';
- $('ai-ws').value=cfg.workspace;$('ai-web').checked=cfg.web;$('ai-ask').checked=!cfg.auto_approve;$('ai-cmd').checked=!!cfg.commands;$('ai-key').value='';
+ $('ai-ws').value=cfg.workspace;$('ai-web').checked=cfg.web;$('ai-ask').checked=!cfg.auto_approve;$('ai-sp').value=cfg.search_provider||'duckduckgo';$('ai-sk').value='';searchUi();$('ai-cmd').checked=!!cfg.commands;$('ai-key').value='';
  var nk=(cfg.presets[cfg.provider]||{}).no_key;$('ai-key').disabled=!!nk;$('ai-key').placeholder=nk?'Not needed for this provider':(cfg.has_key?'Saved '+cfg.key_hint+'. Leave empty to keep it.':'Paste your key');$('ai-keyn').textContent=nk?'':'The key is stored in data/llm.json on this computer. Never share that file.';
  var t=target();Array.prototype.forEach.call(document.getElementsByName('ai-tg'),function(r){r.checked=r.value===t});
  var st=$('ai-stat');st.textContent=cfg.ready?'Ready':cfg.problem;st.className='stat '+(cfg.ready?'ok':'no');$('aistat').textContent=cfg.ready?'On':'Off'}
+$('ai-sp').onchange=searchUi;
 $('ai-prov').onchange=function(){if(!cfg)return;var p=cfg.presets[$('ai-prov').value]||{};$('ai-model').value='';$('ai-model').placeholder=p.model||'';$('ai-url').value='';$('ai-url').placeholder=p.base_url||'https://…/v1';$('ai-key').disabled=!!p.no_key;$('ai-key').placeholder=p.no_key?'Not needed for this provider':'Paste your key'};
 $('ai-new').onclick=function(){if(!real()){toast('Open the PC app to keep chats.');return}send({cmd:'agent_reset'});clearBox();empty();toast('New chat')};
 $('ai-save').onclick=function(){if(!real()){toast('Open the PC app to save these settings.');return}
  var tg=document.querySelector('input[name="ai-tg"]:checked');try{localStorage.setItem(KEYT,tg?tg.value:'agent')}catch(e){}
- send({cmd:'llm_set',config:{provider:$('ai-prov').value,model:$('ai-model').value,base_url:$('ai-url').value,api_key:$('ai-key').value,workspace:$('ai-ws').value,web:$('ai-web').checked,auto_approve:!$('ai-ask').checked,commands:$('ai-cmd').checked}});toast('Saved')};
+ send({cmd:'llm_set',config:{provider:$('ai-prov').value,model:$('ai-model').value,base_url:$('ai-url').value,api_key:$('ai-key').value,workspace:$('ai-ws').value,web:$('ai-web').checked,auto_approve:!$('ai-ask').checked,commands:$('ai-cmd').checked,search_provider:$('ai-sp').value,search_key:$('ai-sk').value}});toast('Saved')};
 window.GCai={onMsg:function(m){
  if(m.type==='llm'){cfg=m;fill();return}
  if(m.type==='agent'){onAgent(m);return}

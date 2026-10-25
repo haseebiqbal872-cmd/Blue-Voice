@@ -115,7 +115,7 @@ class Agent:
     def _run(self):
         try:
             r = self.cfg.resolved()
-            tools = Tools(r["workspace"], r["web"], r.get("commands", False))
+            tools = Tools(r["workspace"], r["web"], r.get("commands", False), r.get("search_provider", ""), r.get("search_key", ""))
             for _ in range(MAX_STEPS):
                 if self.stop_evt.is_set():
                     break

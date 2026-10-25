@@ -215,3 +215,27 @@ def test_agent_streams_asks_for_commands_and_saves(tmp_path):
     shown = a.open_chat(cid); assert shown == [{"role": "user", "text": "go"}, {"role": "assistant", "text": "run"}, {"role": "assistant", "text": "done"}]
     a.delete_chat(cid); assert a.chats() == []
     assert a.store.load("../../etc/passwd") is None
+
+
+def test_keyed_web_search(tmp_path):
+    seen = []
+    def fetch(url, headers, body=None):
+        seen.append((url, headers, body))
+        if "brave" in url:
+            return {"web": {"results": [{"title": "T <b>1</b>", "url": "https://a.example", "description": "D1"}]}}
+        return {"answer": "42", "results": [{"title": "T2", "url": "https://b.example", "content": "C2"}]}
+    b = Tools("", True, False, "brave", "k1", fetch).run("web_search", {"query": "hi there"})
+    assert "T 1" in b and "https://a.example" in b and seen[0][1]["X-Subscription-Token"] == "k1" and "hi%20there" in seen[0][0]
+    t = Tools("", True, False, "tavily", "k2", fetch).run("web_search", {"query": "q"})
+    assert "Summary: 42" in t and "https://b.example" in t and seen[1][1]["Authorization"] == "Bearer k2" and seen[1][2]["query"] == "q"
+    def bad(url, headers, body=None): raise ToolError("The search key was not accepted.")
+    tl = Tools("", True, False, "brave", "x", bad)
+    tl._ddg = lambda q: "free results"
+    assert "not accepted" in tl.run("web_search", {"query": "q"}) and "free results" in tl.run("web_search", {"query": "q"})
+
+
+def test_search_key_never_shown(tmp_path):
+    cfg = LLMConfig(str(tmp_path / "llm.json")); cfg.update({"search_provider": "brave", "search_key": "BSA-secret-123456"})
+    pub = json.dumps(cfg.public())
+    assert "BSA-secret" not in pub and cfg.public()["has_search_key"] and cfg.public()["search_hint"] == "…3456"
+    cfg.update({"search_provider": "tavily"}); assert cfg.data["search_key"] == "BSA-secret-123456"      # empty key keeps the saved one

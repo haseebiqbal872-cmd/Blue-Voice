@@ -25,7 +25,7 @@ recognition all run on your own computer.
      that app's message box**. *You* press its Send button; Blue Voice never does. **End conversation** brings Blue Voice back.
   2. **Built-in assistant:** connect any model in *Settings → AI models*: Claude, OpenAI, Gemini, Ollama (local and free),
      OpenRouter, Groq, or any OpenAI-compatible address. Replies stream in as they are written and chats are saved on your computer.
-     The assistant can read, write, edit and delete files in a folder **you** choose, search the web, and (if you switch it on) run commands.
+     The assistant can read, write, edit and delete files in a folder **you** choose, search the web (free search, or Brave or Tavily with your own key for steadier results), and (if you switch it on) run commands.
 - **Share signs.** *Settings → Updates & signs* saves your signs as a small file and adds signs from someone else's file.
 - **Updates.** The same page checks GitHub for a newer version.
 
