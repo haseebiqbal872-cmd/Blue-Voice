@@ -2572,16 +2572,12 @@ window.__bvIntro=true;
 if(force||!store('bv-welcomed'))hello();
 else{var a0=acct();if(a0&&a0.signed()||sessionStorage.getItem('bv-guest-s')==='1')el.style.display='none';else{login()}}
 /* ----- Settings: Updates and signs ----- */
-var nav=document.querySelector('.spnav'),main=document.querySelector('.spmain');
-var b=document.createElement('button');b.className='spn';b.setAttribute('data-p','pg-up');b.innerHTML='<b>Updates &amp; signs</b><em id="upv">1.0.0</em>';
-nav.insertBefore(b,nav.querySelector('[data-p="pg-fonts"]'));
-var pg=document.createElement('div');pg.className='pg';pg.id='pg-up';
+var b=document.querySelector('.spn[data-p="pg-up"]'),pg=$('pg-up');
 pg.innerHTML='<h3 class="pgh">Updates &amp; signs</h3><div class="pup"><p class="note"><b>Blue Voice</b> version <span id="upver">1.0.0</span>. It knows 250 words so far and we are adding more. For daily use, first record your own words (Settings → Save &amp; record signs). Add the words you use to talk and share them with friends below.</p>'+
  '<div class="row"><button class="go" id="upchk" type="button">Check for updates</button><span class="stat" id="upst"></span></div><div class="row" id="uplink" hidden><a id="upa" class="go" target="_blank" rel="noopener" href="#">Download the new version</a></div>'+
  '<h3 class="pgh" style="margin-top:22px">Share or add signs</h3><p class="note">A sign pack is a small file with the signs you recorded. Send yours to someone, or add signs from a pack you were given. Packs only work with the same Blue Voice recognition model.</p>'+
  '<div class="row"><button class="go" id="upex" type="button">Save my signs as a file</button><button class="go" id="upim" type="button">Add signs from a file</button><input id="upfile" type="file" accept=".json,application/json" hidden><span class="stat" id="upps"></span></div>'+
  '<h3 class="pgh" style="margin-top:22px">Account</h3><div class="row"><span class="stat" id="upwho"></span><button class="go" id="upout" type="button">Log out</button></div></div>';
-main.appendChild(pg);
 function who(){var a=acct();var t=a&&a.signed()?'Logged in as '+a.name():'Not logged in';$('upwho').textContent=t;$('upout').textContent=a&&a.signed()?'Log out':'Log in'}
 b.addEventListener('click',who);
 function st(id,t,c){var e=$(id);e.textContent=t;e.className='stat '+(c||'')}
